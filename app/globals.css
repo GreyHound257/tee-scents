@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Base styles */
+@layer base {
+  html {
+    @apply bg-black text-white;
+  }
+
+  body {
+    @apply antialiased;
+  }
+}
+
+/* Optional: reusable components */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium bg-white text-black hover:bg-gray-200;
+  }
+}
+
+/* Optional: utilities */
+@layer utilities {
+  .center {
+    @apply flex items-center justify-center;
+  }
+}
