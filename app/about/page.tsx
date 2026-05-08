@@ -35,7 +35,7 @@ export default function AboutPage() {
             className="relative h-[600px] w-full bg-[#E5E0DA] rounded-sm overflow-hidden shadow-sm"
           >
             <Image 
-              src="/images/lifestyle-spritz.jpg" 
+              src="/lifestyle-spritz.jpg" 
               alt="Founder Journey" 
               fill 
               className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
