@@ -1,222 +1,206 @@
 "use client";
+import { useState } from 'react';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
-import { useState } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-
-import { getWhatsAppLink } from "@/utils/whatsapp";
-
+// THE DATA DEFINITIONS 
 const questions = [
   {
     id: 1,
-    question: "How do you start your ideal morning?",
+    question: "How do you want to feel today?",
     options: [
-      { text: "A cold shower and a fresh green smoothie", type: "fresh" },
-      { text: "Curled up with a book and coffee", type: "woody" },
-      { text: "Walking through a garden in bloom", type: "floral" },
+      { text: "Invigorated and ready to go", type: "fresh" },
+      { text: "Soft, romantic, and sweet", type: "romantic" },
+      { text: "Deep, mysterious, and bold", type: "mysterious" },
+      { text: "Calm, cozy, and relaxed", type: "cozy" },
+      { text: "Empowered and confident", type: "confident" },
+      { text: "Wild and adventurous", type: "wild" },
     ],
   },
   {
     id: 2,
-    question: "Choose a vibe for your evening:",
+    question: "Pick a morning setting:",
     options: [
-      { text: "Sharp, clean, and professional", type: "fresh" },
-      { text: "Mysterious, warm, and cozy", type: "woody" },
-      { text: "Sweet, romantic, and playful", type: "floral" },
+      { text: "Sunrise at a citrus grove", type: "fresh" },
+      { text: "Breakfast in a rose garden", type: "romantic" },
+      { text: "Foggy morning in the woods", type: "mysterious" },
+      { text: "Curled up in cashmere blankets", type: "cozy" },
+      { text: "Sharp suit and a fresh apple", type: "confident" },
+      { text: "A hike through fresh grass", type: "wild" },
     ],
   },
   {
     id: 3,
-    question: "Which setting calls to you?",
+    question: "Which 'Note' speaks to your soul?",
     options: [
-      { text: "The beach at sunrise", type: "fresh" },
-      { text: "A cabin in the rain", type: "woody" },
-      { text: "A high-end flower shop", type: "floral" },
+      { text: "Zesty Lemon & Mint", type: "fresh" },
+      { text: "Vanilla & Sandalwood", type: "romantic" },
+      { text: "Spicy Patchouli & Oud", type: "mysterious" },
+      { text: "Coconut & Sweet Almond", type: "cozy" },
+      { text: "Bold Tuberose & Bergamot", type: "confident" },
+      { text: "Sea Salt & Green Apple", type: "wild" },
     ],
   },
 ];
 
-type PaymentMethod = "Transfer" | "POD";
+const vibesData: any = {
+  fresh: {
+    title: "Fresh & Energetic",
+    perfume: "Citrus-based (Lemon/Bergamot)",
+    spray: "Mint or Green Tea",
+    mist: "Light Floral (Jasmine)",
+    oil: "Eucalyptus",
+    description: "Citrus and mint awaken the senses, while floral notes provide a refreshing balance.",
+    image: "/fresh-floral.jpg"
+  },
+  romantic: {
+    title: "Romantic & Soft",
+    perfume: "Vanilla or Sandalwood",
+    spray: "Rose or Lavender",
+    mist: "Soft Musky Mist",
+    oil: "Honey or Amber",
+    description: "Warm, sweet notes create a comforting backdrop with a romantic floral touch.",
+    image: "/lifestyle-spritz.jpg"
+  },
+  mysterious: {
+    title: "Mysterious & Alluring",
+    perfume: "Spicy (Patchouli/Pepper)",
+    spray: "Dark Berry",
+    mist: "Woody (Cedarwood)",
+    oil: "Oud or Incense",
+    description: "Spicy and woody notes add complexity. Dark berry enhances the richness.",
+    image: "/warm-woody.jpg"
+  },
+  cozy: {
+    title: "Relaxed & Cozy",
+    perfume: "Light Musk or Soft Floral",
+    spray: "Chamomile or Vanilla",
+    mist: "Coconut or Cashmere",
+    oil: "Neroli or Sweet Almond",
+    description: "Soft florals and cozy scents create a calming, nostalgic atmosphere.",
+    image: "/hero-perfume.jpg"
+  },
+  confident: {
+    title: "Confident & Empowered",
+    perfume: "Bold Floral (Tuberose)",
+    spray: "Crisp Apple or Pear",
+    mist: "Spicy Cinnamon",
+    oil: "Bergamot or Blackcurrant",
+    description: "Bold florals convey strength, while crisp fruit notes add dynamic energy.",
+    image: "/lifestyle-spritz.jpg"
+  },
+  wild: {
+    title: "Adventurous & Wild",
+    perfume: "Sea Salt or Oceanic",
+    spray: "Green Apple or Cucumber",
+    mist: "Fresh Grass or Herbal",
+    oil: "Bergamot or Mint",
+    description: "Oceanic and fresh scents evoke the outdoors and a feeling of adventure.",
+    image: "/fresh-floral.jpg"
+  }
+};
 
 export default function ScentQuiz() {
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const [scores, setScores] = useState({
-    fresh: 0,
-    woody: 0,
-    floral: 0,
-  });
-
+  const [step, setStep] = useState(0);
+  const [scores, setScores] = useState<any>({});
   const [result, setResult] = useState<string | null>(null);
 
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("Transfer");
-
-  const handleAnswer = (type: string) => {
-    const newScores = {
-      ...scores,
-      [type]: scores[type as keyof typeof scores] + 1,
-    };
-
+  const handleSelect = (type: string) => {
+    const newScores = { ...scores, [type]: (scores[type] || 0) + 1 };
     setScores(newScores);
 
-    if (currentStep < questions.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+    if (step < questions.length - 1) {
+      setStep(step + 1);
     } else {
-      const winner = Object.keys(newScores).reduce((a, b) =>
-        newScores[a as keyof typeof newScores] >
-        newScores[b as keyof typeof newScores]
-          ? a
-          : b
+      const winner = Object.keys(newScores).reduce((a, b) => 
+        (newScores[a] || 0) > (newScores[b] || 0) ? a : b
       );
-
       setResult(winner);
     }
   };
 
-  // RESULT DATA
-  const recommendations: any = {
-    fresh: {
-      name: "Floral Bliss",
-      desc: "You love crisp, clean energy.",
-      img: "/fresh-floral.jpg",
-    },
-    woody: {
-      name: "Midnight Oak",
-      desc: "You gravitate towards depth and warmth.",
-      img: "/warm-woody.jpg",
-    },
-    floral: {
-      name: "Floral Bliss",
-      desc: "You are all about elegance and bloom.",
-      img: "/fresh-floral.jpg",
-    },
-  };
-
   if (result) {
-    const final = recommendations[result];
-
+    const v = vibesData[result];
     return (
-      <div className="min-h-screen bg-[#F9F6F2] flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl text-center"
+      <div className="min-h-screen bg-[var(--background)] pt-32 pb-20 px-6 flex items-center justify-center transition-colors duration-500">
+        <motion.div 
+          initial={{opacity:0, scale:0.9}} 
+          animate={{opacity:1, scale:1}} 
+          className="max-w-2xl bg-[var(--card)] p-8 md:p-12 shadow-xl rounded-sm text-center border border-[var(--muted)] transition-colors duration-500"
         >
-          <h2 className="font-serif text-3xl mb-2 text-[#2D2926]">
-            Your Match: {final.name}
-          </h2>
-
-          <p className="text-[#8C7355] mb-6">{final.desc}</p>
-
-          <div className="relative h-64 w-full mb-8 rounded-lg overflow-hidden">
-            <Image
-              src={final.img}
-              alt={final.name}
-              fill
-              className="object-cover"
-            />
+          <span className="text-[10px] uppercase tracking-[0.4em] text-[var(--accent)] font-bold">Your Discovery</span>
+          <h1 className="font-serif text-4xl md:text-5xl my-6 text-[var(--foreground)]">{v.title}</h1>
+          
+          <div className="relative h-64 w-full mb-8">
+            <Image src={v.image} alt={v.title} fill className="object-cover rounded-sm" />
           </div>
 
-          {/* PAYMENT OPTIONS */}
-          <div className="mb-6">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#8C7355] mb-4">
-              Select Payment Method
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setPaymentMethod("Transfer")}
-                className={`py-3 border text-xs uppercase tracking-wider transition-all ${
-                  paymentMethod === "Transfer"
-                    ? "bg-[#2D2926] text-white border-[#2D2926]"
-                    : "bg-white text-[#2D2926] border-gray-300"
-                }`}
-              >
-                Bank Transfer
-              </button>
-
-              <button
-                onClick={() => setPaymentMethod("POD")}
-                className={`py-3 border text-xs uppercase tracking-wider transition-all ${
-                  paymentMethod === "POD"
-                    ? "bg-[#2D2926] text-white border-[#2D2926]"
-                    : "bg-white text-[#2D2926] border-gray-300"
-                }`}
-              >
-                Pay on Delivery
-              </button>
+          <div className="grid md:grid-cols-2 gap-6 text-left mb-8 border-y border-[var(--muted)] py-8 transition-colors duration-500">
+            <div>
+              <p className="text-[10px] uppercase text-gray-400 mb-2 font-bold">Recommended Layering:</p>
+              <ul className="text-sm space-y-2 text-[var(--foreground)]">
+                <li><strong className="text-[var(--accent)]">Perfume:</strong> {v.perfume}</li>
+                <li><strong className="text-[var(--accent)]">Body Spray:</strong> {v.spray}</li>
+                <li><strong className="text-[var(--accent)]">Body Mist:</strong> {v.mist}</li>
+                <li><strong className="text-[var(--accent)]">Oil:</strong> {v.oil}</li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase text-gray-400 mb-2 font-bold">Why it works:</p>
+              <p className="text-sm italic text-[var(--foreground)] opacity-70 leading-relaxed">{v.description}</p>
             </div>
           </div>
 
-          {/* WHATSAPP CTA */}
-          <a
-            href={getWhatsAppLink(final.name, paymentMethod)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-4 bg-[#2D2926] text-white uppercase tracking-widest text-xs hover:bg-[#8C7355] transition-colors"
-          >
-            Claim Your Scent
-          </a>
-
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 text-[10px] text-gray-400 uppercase underline"
-          >
-            Retake Quiz
-          </button>
+          <div className="flex flex-col gap-4">
+            <Link href="/#shop" className="btn-luxury">Shop This Collection</Link>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="text-[10px] uppercase tracking-widest text-gray-400 underline decoration-[var(--muted)] hover:text-[var(--foreground)] transition-all"
+            >
+              Retake Quiz
+            </button>
+          </div>
         </motion.div>
       </div>
     );
   }
 
-  // QUIZ UI
   return (
-    <div className="min-h-screen bg-[#F9F6F2] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[var(--background)] pt-32 px-6 flex items-center justify-center transition-colors duration-500">
       <div className="max-w-xl w-full">
-        {/* PROGRESS */}
-        <div className="mb-12 text-center">
-          <span className="text-[10px] tracking-[0.3em] text-[#8C7355] uppercase">
-            Question {currentStep + 1} of {questions.length}
-          </span>
+        <div className="text-center mb-12">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[var(--accent)] mb-2 font-bold">Discovery Quiz</p>
+          <h2 className="font-serif text-4xl text-[var(--foreground)]">
+            {questions[step].question}
+          </h2>
         </div>
-
-        {/* QUESTION ANIMATION */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -20, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-full"
-          >
-            <h2 className="font-serif text-4xl text-[#2D2926] text-center mb-10">
-              {questions[currentStep].question}
-            </h2>
-
-            <div className="grid gap-4">
-              {questions[currentStep].options.map((opt, i) => (
-                <motion.button
-                  key={i}
-                  onClick={() => handleAnswer(opt.type)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full p-6 bg-white border hover:border-[#8C7355] text-left transition-all flex justify-between items-center"
+        <div className="grid gap-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ x: 10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -10, opacity: 0 }}
+              className="grid gap-4"
+            >
+              {questions[step].options.map((opt, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => handleSelect(opt.type)} 
+                  className="w-full bg-[var(--card)] p-6 text-left border border-[var(--muted)] hover:border-[var(--accent)] transition-all group flex justify-between items-center shadow-sm"
                 >
-                  <span className="text-[#5E5852] font-medium">
+                  <span className="text-sm uppercase tracking-widest text-[var(--foreground)] font-medium">
                     {opt.text}
                   </span>
-
-                  <span className="opacity-0 group-hover:opacity-100 text-[#8C7355]">
+                  <span className="opacity-0 group-hover:opacity-100 transition-all text-[var(--accent)] translate-x-[-10px] group-hover:translate-x-0">
                     →
                   </span>
-                </motion.button>
+                </button>
               ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

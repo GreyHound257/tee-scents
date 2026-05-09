@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
-/* Base styles */
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+}
+
 @layer base {
+  :root {
+    --background: #F9F6F2;
+    --foreground: #2D2926;
+    --card: #FFFFFF;
+    --accent: #8C7355;
+    --muted: #E5E0DA;
+  }
+
+  .dark {
+    --background: #0F0E0D;
+    --foreground: #F9F6F2;
+    --card: #1A1918;
+    --accent: #D4AF37;
+    --muted: #222120;
+  }
+
   html {
-    @apply bg-black text-white;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply antialiased;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), sans-serif;
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif), serif;
   }
 }
 
-/* Optional: reusable components */
 @layer components {
-  .btn {
-    @apply px-4 py-2 rounded-md font-medium bg-white text-black hover:bg-gray-200;
+  /* We define the luxury button using standard CSS to avoid the v4 apply error */
+  .btn-luxury {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-color: var(--foreground);
+    color: var(--background);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border-radius: 0.125rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   }
-}
 
-/* Optional: utilities */
-@layer utilities {
-  .center {
-    @apply flex items-center justify-center;
+  .btn-luxury:hover {
+    background-color: var(--accent);
+    color: white;
+  }
+
+  .btn-luxury:active {
+    transform: scale(0.98);
   }
 }
